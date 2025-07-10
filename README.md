@@ -39,6 +39,34 @@ input——box的最大公约数input为Comp的media——media作为input向所
 这种编程的极致就是ArkUI，完全的声明式UI框架：你可以将逻辑写在叶子节点，而不是公共父节点上！这样有个问题是，存在link和prop的区别，但是这个区别对于组件来说是不必感知的，组件只关心box的media，不关心外部，所以它的顶层哲学不是组件而是声明式编程。从计算机系统的发展来看，这是最符合发展规律的，对于编码者隐去细节，繁杂的业务交给框架处理，偏僻的bug给框架修复，用业务覆盖达到输入输出的准确性，而不是顶层哲学的完备达到100%的准确性。<br>
 React则更接近组件的视角，总线必须在对应的层级或者之上，子组件不包含父组件的总线，子组件的总线可以在父组件总线中。但是由于其是自顶向下的数据流，因此有props和state的区别，对于组件来说media是没有区分的。<br>
 
+## 自底向上的组件开发
+Father() {<br>
+    CompA<br>
+    CompB<br>
+    CompC<br>
+    LINE: {<br>
+        CompA.input.onChange = (val) => {<br>
+            CompB.textValue = val;<br>
+            CompC.number = val.length;<br>
+        }<br>
+    }<br>
+}<br>
+CompA(state: {<br>
+    inputValue<br>
+}) {<br>
+    <input value = {inputValue}/><br>
+}<br>
+CompB(state: {<br>
+    textValue<br>
+}) {<br>
+    <span>{textValue}</span><br>
+}<br>
+CompC(state: {<br>
+    number<br>
+}) {<br>
+    <progress value = {number}/><br>
+}<br>
+
 ## UI分析
 具体而言，视图操作只应该响应最少的 dom 变化。假设一个操作，导致某些节点变化；那么他们公共父节点的以外节点是不用改变的；节点只有属性变化，则修改即可；新增子节点，需要计算、构建子节点；删除则删除。以上是一个节点的情况，一个操作，会对多个节点产生修改的场景，可能存在冗余修改，比如父节点删除了子节点，那么子节点的修改就是多余的；两个节点新增的是同样的节点，那么这个节点的多次构建也是多余的。<br>
 自顶向下的逐步修改：天然解决第一种情况；第二种则无法避免，新建第一个时不知道后面是否会用到相同的节点。<br>
